@@ -351,7 +351,8 @@ bool handle_take(GameState *state, const char *verb, const char *noun) {
 
 // use 명령어
 bool handle_use(GameState *state, const char *verb, const char *noun) {
-    (void)verb; // Unused parameter
+    (void)verb; // Unused parameter - 컴파일러 경고를 피하기 위해 사용하지 않는 매개변수를 명시적으로 표시
+
     if (strlen(noun) == 0) {
         printf("무엇을 사용할지 입력하세요. (예: use key)\n");
         return false;
@@ -363,26 +364,26 @@ bool handle_use(GameState *state, const char *verb, const char *noun) {
                 if (has_item(state, ITEM_TORCH)) {
                     if (state->puzzles.papyrus_riddle_revealed) { // 파피루스 힌트 획득 후
                         printf("횃불을 아프로디테의 벽화 아래 횃불걸이에 꽂았습니다.\n");
-                        print_delay("쿠구궁, 하는 효과음과 함께 횃불 옆의 벽돌이 튀어나옵니다.\n", 30);
+                        print_delay("쿠구궁, 하는 효과음과 함께 횃불 옆의 벽돌이 튀어나옵니다.\n", 1000);
                         printf("튀어나온 벽돌에는 '헬레네'라고 적혀있네요.\n");
                         set_puzzle_solved(&state->puzzles.torch_placed_on_aphrodite);
                         set_puzzle_solved(&state->puzzles.helene_password_revealed);
                         remove_item_from_inventory(state, ITEM_TORCH);
                         return true;
                     } else {
-                        printf("아직은 용도를 잘 모르겠습니다... 횃불을 보면 어쩐지 그림을 볼 수 있을 것만 같네요.\n");
+                        printf("아직은 용도를 잘 모르겠습니다... 횃불을 보면 어쩐지 그림을 볼 수 있을 것 같은데.\n");
                     }
                 } else {
                     printf("횃불을 가지고 있지 않습니다.\n");
                 }
-            } else if (strcmp(noun, "helene") == 0 || strcmp(noun, "헬레네") == 0) { // 암호로 직접 입력
+            } else if (strcmp(noun, "helene") == 0 || strcmp(noun, "헬레네") == 0) { // 암호로 직접 사용
                 if (state->puzzles.helene_password_revealed) {
                     if (!state->puzzles.palladium_obtained) {
                         // 사실상 use password와 동일한 효과
                         printf("중앙 제단의 자물쇠에 '헬레네' 암호를 입력했습니다.\n");
                         set_puzzle_solved(&state->puzzles.palladium_obtained); // 팔라디온 획득 플래그
                         add_item_to_inventory(state, ITEM_PALLADIUM); // 팔라디온 인벤토리에 추가
-                        printf("재단이 열리며 팔라디온을 획득하였습니다. 열쇠 또한 같이 있군요! 열쇠를 사용할 곳은 어디일까요?\n");
+                        printf("재단이 열리며 팔라디온을 획득하였습니다. 열쇠 또한 같이 있군요! 열쇠를 챙겼습니다.\n");
                         set_puzzle_solved(&state->puzzles.room1_exit_key_obtained); // 탈출 열쇠 획득 플래그
                         add_item_to_inventory(state, ITEM_ESCAPE_KEY); // 탈출 열쇠 인벤토리에 추가
                         return true;
@@ -402,7 +403,7 @@ bool handle_use(GameState *state, const char *verb, const char *noun) {
                     printf("탈출 열쇠를 가지고 있지 않습니다.\n");
                 }
             } else {
-                 printf("'%s'은(는) 이곳에서 사용할 수 없습니다.\n", noun);
+                printf("'%s'은(는) 이곳에서 사용할 수 없습니다.\n", noun);
             }
             break;
 
@@ -419,18 +420,36 @@ bool handle_use(GameState *state, const char *verb, const char *noun) {
                     printf("로브를 가지고 있지 않습니다.\n");
                 }
             } else if (strcmp(noun, "aphrodite") == 0 || strcmp(noun, "아프로디테") == 0) {
-                 if (state->puzzles.robe_equipped && !state->puzzles.guard2_quiz_solved) {
-                     printf("경비병에게 '아프로디테'라고 답했습니다. 경비병 2가 고개를 끄덕이며 말합니다:\n");
-                     printf("  \"그래, 그럼 문 앞에 가서 두 번 툭툭 두드리고 암호를 말해. 들어갈 수 있을 거야.\"\n");
-                     set_puzzle_solved(&state->puzzles.guard2_quiz_solved);
-                     return true;
-                 } else if (state->puzzles.guard2_quiz_solved) {
-                     printf("경비병 2는 이미 당신을 통과시켰습니다.\n");
-                 } else {
-                     printf("아직 이 답을 사용할 때가 아닙니다. 경비병 2와 대화하고 로브를 착용해야 합니다.\n");
-                 }
+                // 이 블록은 "경비병 2"의 퀴즈 답을 처리합니다.
+                if (state->puzzles.robe_equipped && !state->puzzles.guard2_quiz_solved) {
+                    printf("경비병에게 '아프로디테'라고 답했습니다. 경비병 2가 고개를 끄덕이며 말합니다:\n");
+                    printf("  \"그래, 그럼 문 앞에 가서 두 번 툭툭 두드리고 암호를 말해. 들어갈 수 있을 거야.\"\n");
+                    set_puzzle_solved(&state->puzzles.guard2_quiz_solved);
+                    return true;
+                } else if (state->puzzles.guard2_quiz_solved) {
+                    printf("경비병 2는 이미 당신을 통과시켰습니다.\n");
+                } else {
+                    printf("아직 이 답을 사용할 때가 아닙니다. 경비병 2와 대화하고 로브를 착용해야 합니다.\n");
+                }
+            } else if (strcmp(noun, "odysseus") == 0 || strcmp(noun, "오디세우스") == 0) {
+                // 이 블록은 "트로이 목마"의 암호를 처리합니다.
+                if (state->puzzles.trojan_horse_banged && !state->puzzles.trojan_horse_password_entered) {
+                    printf("트로이 목마를 고안한 사람으로 '오디세우스'를 말했습니다.\n");
+                    printf("목마의 숨겨진 문이 천천히 열립니다. 안으로 진입합니다.\n");
+                    set_puzzle_solved(&state->puzzles.trojan_horse_password_entered);
+                    // Room 2 클리어 및 Room 3로 이동 처리
+                    add_item_to_inventory(state, ITEM_SLEEPING_POWDER); // 수면 가루 획득
+                    printf("안에 타고 있던 동료들 중 하나가 필요할 때 사용하라며 당신에게 수면 가루를 건넵니다.\n");
+                    state->puzzles.sleeping_powder_obtained = true; // 플래그 설정
+                    state->current_room = ROOM_TROY_PALACE_FRONT; // 다음 방으로 이동
+                    return true;
+                } else if (state->puzzles.trojan_horse_password_entered) {
+                    printf("이미 목마 안으로 진입했습니다.\n");
+                } else {
+                    printf("아직 이 암호를 사용할 때가 아닙니다. 먼저 목마를 두드려야 합니다.\n");
+                }
             } else {
-                 printf("'%s'은(는) 이곳에서 사용할 수 없습니다.\n", noun);
+                printf("'%s'은(는) 이곳에서 사용할 수 없습니다.\n", noun);
             }
             break;
 
@@ -447,16 +466,16 @@ bool handle_use(GameState *state, const char *verb, const char *noun) {
                 } else {
                     printf("수면 가루를 가지고 있지 않습니다.\n");
                 }
-            } else if (strcmp(noun, "left arrow") == 0 || strcmp(noun, "오른쪽 화살표") == 0 ||
-                       strcmp(noun, "upper arrow") == 0 || strcmp(noun, "윗쪽 화살표") == 0)
-            {
+            } else if (strcmp(noun, "right arrow") == 0 || strcmp(noun, "오른쪽 화살표") == 0 ||
+                       strcmp(noun, "left arrow") == 0 || strcmp(noun, "왼쪽 화살표") == 0 || // 순서 변경
+                       strcmp(noun, "upper arrow") == 0 || strcmp(noun, "윗쪽 화살표") == 0) {
                 // 기어 조작 로직 (left arrow - right arrow - upper arrow)
                 // 이 로직은 순서가 중요하므로, 각 화살표 입력 시 상태를 저장해야 함.
                 // 여기서는 편의상 입력 문자열을 직접 확인함.
                 // 실제 게임에서는 별도의 기어 상태 플래그를 두는 것이 좋음.
                 if (state->puzzles.guards_defeated_by_powder && state->puzzles.gear_hint_revealed) {
                     static int gear_sequence_step = 0; // 0: 초기, 1: 좌, 2: 좌-우, 3: 좌-우-위
-                    if (strcmp(noun, "left arrow") == 0) {
+                    if (strcmp(noun, "left arrow") == 0 || strcmp(noun, "왼쪽 화살표") == 0) {
                         if (gear_sequence_step == 0) {
                             gear_sequence_step = 1;
                             printf("기어 장치에 왼쪽 화살표를 입력했습니다.\n");
@@ -464,7 +483,7 @@ bool handle_use(GameState *state, const char *verb, const char *noun) {
                             printf("기어가 덜컥거리며 헛돌기 시작했다… 다시 시도해보자.\n");
                             gear_sequence_step = 0; // Reset
                         }
-                    } else if (strcmp(noun, "right arrow") == 0) {
+                    } else if (strcmp(noun, "right arrow") == 0 || strcmp(noun, "오른쪽 화살표") == 0) {
                         if (gear_sequence_step == 1) {
                             gear_sequence_step = 2;
                             printf("기어 장치에 오른쪽 화살표를 입력했습니다.\n");
@@ -472,7 +491,7 @@ bool handle_use(GameState *state, const char *verb, const char *noun) {
                             printf("기어가 덜컥거리며 헛돌기 시작했다… 다시 시도해보자.\n");
                             gear_sequence_step = 0; // Reset
                         }
-                    } else if (strcmp(noun, "upper arrow") == 0) {
+                    } else if (strcmp(noun, "upper arrow") == 0 || strcmp(noun, "윗쪽 화살표") == 0) {
                         if (gear_sequence_step == 2) {
                             printf("기어 장치에 윗쪽 화살표를 입력했습니다.\n");
                             printf("기어들이 완벽히 맞물리며 성문이 천천히 열린다...\n");

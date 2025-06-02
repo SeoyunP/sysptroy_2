@@ -2,6 +2,7 @@
 #define GAME_STATE_H
 
 #include <stdbool.h>
+#include <time.h> // time_t, time 함수를 위해 필요
 
 // 아이템 목록
 typedef enum {
@@ -63,6 +64,9 @@ typedef struct {
     bool game_clear;
     int inventory[MAX_ITEMS]; // 인벤토리 (각 아이템의 수량)
     PuzzleFlags puzzles;
+
+    time_t start_time;         // 게임 시작 시간
+    int time_limit_minutes;    // 게임 제한 시간 (분 단위)
 
     int hint_uses_remaining; // 힌트 사용 횟수 (선택 사항, 여기선 사용 안함)
 } GameState;

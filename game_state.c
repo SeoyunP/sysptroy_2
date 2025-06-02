@@ -1,4 +1,5 @@
 #include "game_state.h"
+#include <time.h> // time 함수를 위해 필요
 #include <stdio.h>
 #include <string.h>
 
@@ -8,6 +9,8 @@ void initialize_game_state(GameState *state) {
     state->game_over = false;
     state->game_clear = false;
     state->hint_uses_remaining = 3; // Example: 3 hints per game
+    state->start_time = time(NULL); // 현재 시간을 시작 시간으로 설정
+    state->time_limit_minutes = 30;  // 예시: 30분 제한 시간 설정
 
     // Inventory initialization
     for (int i = 0; i < MAX_ITEMS; i++) {

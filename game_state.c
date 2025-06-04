@@ -23,6 +23,8 @@ void initialize_game_state(GameState *state) {
     // Room specific initializations
     state->puzzles.papyrus_fragments_collected = 0;
     state->puzzles.notes_collected = 0;
+    state->puzzles.guards_choice_presented = false;
+    state->puzzles.siren_song_attempted = false;
 }
 
 // 인벤토리에 아이템이 있는지 확인

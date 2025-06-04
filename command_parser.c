@@ -15,7 +15,6 @@ bool handle_use(GameState *state, const char *verb, const char *noun);
 bool handle_go(GameState *state, const char *verb, const char *noun);
 bool handle_talk(GameState *state, const char *verb, const char *noun); // talk to guard 등
 bool handle_knock(GameState *state, const char *verb, const char *noun); // knock 2 등
-bool handle_attack(GameState *state, const char *verb, const char *noun); // Room 3: 수면 가루 사용 시 대체될 것
 bool handle_inventory(GameState *state, const char *verb, const char *noun);
 bool handle_help(GameState *state, const char *verb, const char *noun);
 bool handle_quit(GameState *state, const char *verb, const char *noun);
@@ -35,7 +34,6 @@ Command command_list[] = {
     {"enter", handle_go, "무엇 안으로 들어갑니다. (go로 대체 가능)"},
     {"talk", handle_talk, "NPC와 대화합니다. (예: talk to guard 1)"},
     {"knock", handle_knock, "무엇을 두드립니다. (예: knock 2)"},
-    {"attack", handle_attack, "적을 공격합니다. (예: attack guards)"},
     {"inventory", handle_inventory, "현재 소지품을 확인합니다. (축약: i)"},
     {"i", handle_inventory, "인벤토리 (축약)."},
     {"help", handle_help, "사용 가능한 명령어 목록을 봅니다."},
@@ -118,13 +116,13 @@ bool handle_look(GameState *state, const char *verb, const char *noun) {
                 printf("┌──────────┬───────┬──────────┐\n");
                 printf("│          │       │          │\n");
                 printf("│          └───────┘          │\n");
-                printf("│                               │\n");
-                printf("│                               │\n");
-                printf("│          📃         🔥  │\n");
+                printf("│                             │\n");
+                printf("│                             │\n");
+                printf("│          📃         🔥     │\n");
                 printf("│          ┌───────┐          │\n");
-                printf("│          │  제단 │    🔥  │\n");
+                printf("│          │  제단 │    🔥    │\n");
                 printf("│          └───────┘          │\n");
-                printf("│        📃           🔥  │\n");
+                printf("│        📃           🔥     │\n");
                 printf("│    📃                       │\n");
                 printf("└─────────────────────────────┘\n");
                 printf("벽에 달린 세 개의 횃불, 중앙에 놓인 제단, 그리고 굳게 잠긴 문이 보입니다.\n");
@@ -157,11 +155,9 @@ bool handle_look(GameState *state, const char *verb, const char *noun) {
                 printf("│          │기어│           │\n");
                 printf("│          └────┘           │\n");
                 printf("│  👮    🧑‍🌾                 │\n");
-                printf("│                             │\n");
-                printf("│                             │\n");
+                printf("│                           │\n");
+                printf("│                           │\n");
                 printf("└───────────────────────────┘\n");
-                printf("무사히 동료들과 트로이 목마에 합류했습니다. 목마 안에서 꼬박 하루를 보내고, 드디어 적진의 한가운데로 향할 차례입니다.\n");
-                printf("성공적으로 트로이 목마에서 내려 보면, 눈 앞에 보이는 광장은 조용하고 사람들은 술에 취해 자고 있네요.\n");
                 printf("주변을 둘러봐도 성으로 가는 길 밖에 보이지 않네요. 흩어진 쪽지 3개가 보이는 듯합니다.\n");
                 printf("성문 앞에는 두 경비병이 서 있습니다.\n");
                 break;
@@ -353,20 +349,52 @@ bool handle_take(GameState *state, const char *verb, const char *noun) {
     return false;
 }
 
-// use 명령어는 변경 없음.
 bool handle_use(GameState *state, const char *verb, const char *noun) {
-    (void)verb; // Unused parameter - 컴파일러 경고를 피하기 위해 사용하지 않는 매개변수를 명시적으로 표시
+    (void)verb; // Unused parameter
 
     if (strlen(noun) == 0) {
         printf("무엇을 사용할지 입력하세요. (예: use key)\n");
         return false;
     }
 
+    // ------------- Room 3: 경비병 선택지 특별 분기 -------------
+    if (state->current_room == ROOM_TROY_PALACE_FRONT &&
+        state->puzzles.guards_choice_presented &&
+        !state->puzzles.guards_defeated_by_powder) {
+
+        // 1. 방망이 선택
+        if (strcmp(noun, "방망이") == 0 || strcmp(noun, "wooden bat") == 0) {
+            printf("방망이로 경비병들을 공격했지만, 2명을 상대하기엔 너무 약했습니다!...\n");
+            printf("결국 당신은 붙잡혀 게임 오버가 되었습니다.\n");
+            state->game_over = true;
+            return true;
+        }
+        // 2. 수면 가루 선택(아래 기존 분기로 내려감)
+        else if (strcmp(noun, "수면 가루") == 0 || strcmp(noun, "sleeping powder") == 0) {
+            // 아무 것도 하지 않고 아래 switch-case 분기로 이동
+        }
+        // 3. 세이렌의 노래 선택
+        else if (strcmp(noun, "세이렌의 노래") == 0 || strcmp(noun, "siren song") == 0) {
+            printf("당신은 세이렌의 노래를 흉내냈지만, 경비병들은 아무런 반응도 보이지 않습니다.\n");
+            printf("효과가 없었습니다.\n\n");
+            state->puzzles.siren_song_attempted = true;
+            printf("어떻게 하시겠습니까?\n");
+            printf("1. 방망이로 경비병을 공격한다.\n");
+            printf("2. 경비병에게 수면 가루를 사용한다.\n");
+            return true;
+        }
+        // 기타 잘못된 입력
+        else {
+            printf("유효한 선택지가 아닙니다. (use 방망이 | use 수면 가루 | use 세이렌의 노래)\n");
+            return false;
+        }
+    }
+
     switch (state->current_room) {
         case ROOM_PALLADION_TEMPLE:
             if (strcmp(noun, "torch") == 0 || strcmp(noun, "횃불") == 0) {
                 if (has_item(state, ITEM_TORCH)) {
-                    if (state->puzzles.papyrus_riddle_revealed) { // 파피루스 힌트 획득 후
+                    if (state->puzzles.papyrus_riddle_revealed) {
                         printf("횃불을 아프로디테의 벽화 아래 횃불걸이에 꽂았습니다.\n");
                         print_delay("쿠구궁, 하는 효과음과 함께 횃불 옆의 벽돌이 튀어나옵니다.\n", 30);
                         printf("튀어나온 벽돌에는 '헬레네'라고 적혀있네요.\n");
@@ -380,16 +408,15 @@ bool handle_use(GameState *state, const char *verb, const char *noun) {
                 } else {
                     printf("횃불을 가지고 있지 않습니다.\n");
                 }
-            } else if (strcmp(noun, "helene") == 0 || strcmp(noun, "헬레네") == 0) { // 암호로 직접 사용
+            } else if (strcmp(noun, "helene") == 0 || strcmp(noun, "헬레네") == 0) {
                 if (state->puzzles.helene_password_revealed) {
                     if (!state->puzzles.palladium_obtained) {
-                        // 사실상 use password와 동일한 효과
                         printf("중앙 제단의 자물쇠에 '헬레네' 암호를 입력했습니다.\n");
-                        set_puzzle_solved(&state->puzzles.palladium_obtained); // 팔라디온 획득 플래그
-                        add_item_to_inventory(state, ITEM_PALLADIUM); // 팔라디온 인벤토리에 추가
+                        set_puzzle_solved(&state->puzzles.palladium_obtained);
+                        add_item_to_inventory(state, ITEM_PALLADIUM);
                         printf("재단이 열리며 팔라디온을 획득하였습니다. 열쇠 또한 같이 있군요! 열쇠를 챙겼습니다.\n");
-                        set_puzzle_solved(&state->puzzles.room1_exit_key_obtained); // 탈출 열쇠 획득 플래그
-                        add_item_to_inventory(state, ITEM_ESCAPE_KEY); // 탈출 열쇠 인벤토리에 추가
+                        set_puzzle_solved(&state->puzzles.room1_exit_key_obtained);
+                        add_item_to_inventory(state, ITEM_ESCAPE_KEY);
                         return true;
                     } else {
                         printf("이미 제단의 자물쇠가 해제되었습니다.\n");
@@ -401,7 +428,7 @@ bool handle_use(GameState *state, const char *verb, const char *noun) {
                 if (has_item(state, ITEM_ESCAPE_KEY)) {
                     printf("탈출 열쇠를 사용하여 굳게 잠긴 문을 열었습니다.\n");
                     printf("방을 탈출하였습니다. 어라.. 그러나 게임은 아직 끝나지 않았습니다..\n");
-                    state->current_room = ROOM_TROJAN_HORSE; // 다음 방으로 이동
+                    state->current_room = ROOM_TROJAN_HORSE;
                     return true;
                 } else {
                     printf("탈출 열쇠를 가지고 있지 않습니다.\n");
@@ -416,7 +443,7 @@ bool handle_use(GameState *state, const char *verb, const char *noun) {
                 if (has_item(state, ITEM_ROBE) && !state->puzzles.robe_equipped) {
                     set_puzzle_solved(&state->puzzles.robe_equipped);
                     printf("로브를 착용했습니다. 이제 경비병들에게 의심받지 않을 것 같습니다.\n");
-                    remove_item_from_inventory(state, ITEM_ROBE); // 로브는 착용하면 사라지는 개념
+                    remove_item_from_inventory(state, ITEM_ROBE);
                     return true;
                 } else if (state->puzzles.robe_equipped) {
                     printf("이미 로브를 착용하고 있습니다.\n");
@@ -424,7 +451,6 @@ bool handle_use(GameState *state, const char *verb, const char *noun) {
                     printf("로브를 가지고 있지 않습니다.\n");
                 }
             } else if (strcmp(noun, "aphrodite") == 0 || strcmp(noun, "아프로디테") == 0) {
-                // 이 블록은 "경비병 2"의 퀴즈 답을 처리합니다.
                 if (state->puzzles.robe_equipped && !state->puzzles.guard2_quiz_solved) {
                     printf("경비병에게 '아프로디테'라고 답했습니다. 경비병 2가 고개를 끄덕이며 말합니다:\n");
                     printf(" \"그래, 그럼 문 앞에 가서 두 번 툭툭 두드리고 암호를 말해. 들어갈 수 있을 거야.\"\n");
@@ -436,16 +462,14 @@ bool handle_use(GameState *state, const char *verb, const char *noun) {
                     printf("아직 이 답을 사용할 때가 아닙니다. 경비병 2와 대화하고 로브를 착용해야 합니다.\n");
                 }
             } else if (strcmp(noun, "odysseus") == 0 || strcmp(noun, "오디세우스") == 0) {
-                // 이 블록은 "트로이 목마"의 암호를 처리합니다.
                 if (state->puzzles.trojan_horse_banged && !state->puzzles.trojan_horse_password_entered) {
                     printf("트로이 목마를 고안한 사람으로 '오디세우스'를 말했습니다.\n");
                     printf("목마의 숨겨진 문이 천천히 열립니다. 안으로 진입합니다.\n");
                     set_puzzle_solved(&state->puzzles.trojan_horse_password_entered);
-                    // Room 2 클리어 및 Room 3로 이동 처리
-                    add_item_to_inventory(state, ITEM_SLEEPING_POWDER); // 수면 가루 획득
+                    add_item_to_inventory(state, ITEM_SLEEPING_POWDER);
                     printf("안에 타고 있던 동료들 중 하나가 필요할 때 사용하라며 당신에게 수면 가루를 건넵니다.\n");
-                    state->puzzles.sleeping_powder_obtained = true; // 플래그 설정
-                    state->current_room = ROOM_TROY_PALACE_FRONT; // 다음 방으로 이동
+                    state->puzzles.sleeping_powder_obtained = true;
+                    state->current_room = ROOM_TROY_PALACE_FRONT;
                     return true;
                 } else if (state->puzzles.trojan_horse_password_entered) {
                     printf("이미 목마 안으로 진입했습니다.\n");
@@ -473,26 +497,25 @@ bool handle_use(GameState *state, const char *verb, const char *noun) {
             } else if (strcmp(noun, "right arrow") == 0 || strcmp(noun, "오른쪽 화살표") == 0 ||
                        strcmp(noun, "left arrow") == 0 || strcmp(noun, "왼쪽 화살표") == 0 ||
                        strcmp(noun, "upper arrow") == 0 || strcmp(noun, "윗쪽 화살표") == 0) {
-                // 기어 조작 로직 (left arrow - right arrow - upper arrow)
                 if (state->puzzles.guards_defeated_by_powder && state->puzzles.gear_hint_revealed) {
-                    static int gear_sequence_step = 0; // 0: 초기, 1: 좌, 2: 좌-우, 3: 좌-우-위
-                    if (strcmp(noun, "left arrow") == 0 || strcmp(noun, "왼쪽 화살표") == 0) { // 수정: ^[[D 대신 "left arrow"
+                    static int gear_sequence_step = 0;
+                    if (strcmp(noun, "left arrow") == 0 || strcmp(noun, "왼쪽 화살표") == 0) {
                         if (gear_sequence_step == 0) {
                             gear_sequence_step = 1;
                             printf("기어 장치에 왼쪽 화살표를 입력했습니다.\n");
                         } else {
                             printf("기어가 덜컥거리며 헛돌기 시작했다… 다시 시도해보자.\n");
-                            gear_sequence_step = 0; // Reset
+                            gear_sequence_step = 0;
                         }
-                    } else if (strcmp(noun, "right arrow") == 0 || strcmp(noun, "오른쪽 화살표") == 0) { // 수정: ^[[C 대신 "right arrow"
+                    } else if (strcmp(noun, "right arrow") == 0 || strcmp(noun, "오른쪽 화살표") == 0) {
                         if (gear_sequence_step == 1) {
                             gear_sequence_step = 2;
                             printf("기어 장치에 오른쪽 화살표를 입력했습니다.\n");
                         } else {
                             printf("기어가 덜컥거리며 헛돌기 시작했다… 다시 시도해보자.\n");
-                            gear_sequence_step = 0; // Reset
+                            gear_sequence_step = 0;
                         }
-                    } else if (strcmp(noun, "upper arrow") == 0 || strcmp(noun, "윗쪽 화살표") == 0) { // 수정: ^[[A 대신 "upper arrow"
+                    } else if (strcmp(noun, "upper arrow") == 0 || strcmp(noun, "윗쪽 화살표") == 0) {
                         if (gear_sequence_step == 2) {
                             printf("기어 장치에 윗쪽 화살표를 입력했습니다.\n");
                             printf("기어들이 완벽히 맞물리며 성문이 천천히 열린다...\n");
@@ -501,7 +524,7 @@ bool handle_use(GameState *state, const char *verb, const char *noun) {
                             return true;
                         } else {
                             printf("기어가 덜컥거리며 헛돌기 시작했다… 다시 시도해보자.\n");
-                            gear_sequence_step = 0; // Reset
+                            gear_sequence_step = 0;
                         }
                     } else {
                         printf("유효한 기어 조작 입력이 아닙니다. (예: use left arrow)\n");
@@ -511,7 +534,7 @@ bool handle_use(GameState *state, const char *verb, const char *noun) {
                 } else if (!state->puzzles.gear_hint_revealed) {
                     printf("기어 조작 힌트를 얻지 못했습니다. 쪽지를 조합해 보세요.\n");
                 }
-                return false; // 기어 조작 실패 시
+                return false;
             } else {
                 printf("'%s'은(는) 이곳에서 사용할 수 없습니다.\n", noun);
             }
@@ -524,7 +547,6 @@ bool handle_use(GameState *state, const char *verb, const char *noun) {
     return false;
 }
 
-// go 명령어는 변경 없음.
 bool handle_go(GameState *state, const char *verb, const char *noun) {
     (void)verb; // Unused parameter
     if (strlen(noun) == 0) {
@@ -589,7 +611,7 @@ bool handle_go(GameState *state, const char *verb, const char *noun) {
     return false;
 }
 
-// talk 명령어 (NPC 상호작용)는 변경 없음.
+// talk 명령어 (NPC 상호작용)는 일부 변경
 bool handle_talk(GameState *state, const char *verb, const char *noun) {
     (void)verb; // Unused parameter
     if (strlen(noun) == 0) {
@@ -597,6 +619,30 @@ bool handle_talk(GameState *state, const char *verb, const char *noun) {
         return false;
     }
 
+    // --------------------- 3-1. Room 3(트로이 궁전 성문 앞) 선택지 추가 -------------------------
+    if (state->current_room == ROOM_TROY_PALACE_FRONT) {
+        if (strcmp(noun, "guards") == 0 || strcmp(noun, "경비병") == 0) {
+            if (!state->puzzles.guards_defeated_by_powder) {
+                state->puzzles.guards_choice_presented = true;
+                printf("경비병 앞에 섰습니다. 어떻게 할까요?\n");
+                printf("1. 방망이로 경비병을 공격한다.\n");
+                printf("2. 경비병에게 수면 가루를 사용한다.\n");
+                printf("3. 세이렌의 노래를 흉내낸다.\n");
+                printf("아래 중 하나의 명령어를 입력해 보세요:\n");
+                printf("use 방망이  |  use 수면 가루  |  use 세이렌의 노래\n");
+                return true;
+            } else {
+                printf("경비병들은 이미 쓰러져 있습니다.\n");
+                return true;
+            }
+        } else {
+            printf("대화할 수 없는 대상입니다.\n");
+            return false;
+        }
+    }
+    // ------------------------------------------------------------------------------------------
+
+    // 기존 Room 2 경비병 분기
     if (state->current_room == ROOM_TROJAN_HORSE) {
         if (strcmp(noun, "to guard 1") == 0 || strcmp(noun, "guard 1") == 0 || strcmp(noun, "경비병 1") == 0) {
             printf("경비병 1: \"응? 거기 뭐 찾는 거야?\"\n");
@@ -626,6 +672,7 @@ bool handle_talk(GameState *state, const char *verb, const char *noun) {
     }
     return false;
 }
+
 
 // knock 명령어 (트로이 목마 두드리기)는 변경 없음.
 bool handle_knock(GameState *state, const char *verb, const char *noun) {
@@ -657,32 +704,6 @@ bool handle_knock(GameState *state, const char *verb, const char *noun) {
     }
     return false;
 }
-
-// attack 명령어 (Room 3에서 수면가루 사용 시 대체됨)는 변경 없음.
-bool handle_attack(GameState *state, const char *verb, const char *noun) {
-    (void)verb; // Unused parameter
-    if (strlen(noun) == 0) {
-        printf("무엇을 공격할지 입력하세요. (예: attack guards)\n");
-        return false;
-    }
-
-    if (state->current_room == ROOM_TROY_PALACE_FRONT) {
-        if (strcmp(noun, "guards") == 0 || strcmp(noun, "경비병") == 0) {
-            if (!state->puzzles.guards_defeated_by_powder) {
-                printf("경비병들이 당신을 막고 있습니다. 수면 가루를 사용해야 할 것 같습니다.\n");
-            } else {
-                printf("경비병들은 이미 쓰러져 있습니다.\n");
-            }
-            return true;
-        } else {
-            printf("공격할 수 없는 대상입니다.\n");
-        }
-    } else {
-        printf("이곳에서는 공격할 대상이 없습니다.\n");
-    }
-    return false;
-}
-
 
 // inventory 명령어는 변경 없음.
 bool handle_inventory(GameState *state, const char *verb, const char *noun) {
@@ -754,9 +775,6 @@ bool handle_combine(GameState *state, const char *verb, const char *noun) {
     return false;
 }
 
-// =================================================================
-// 새로 추가된 handle_time 함수 구현
-// =================================================================
 bool handle_time(GameState *state, const char *verb, const char *noun) {
     (void)verb; // Unused parameter
     (void)noun; // Unused parameter

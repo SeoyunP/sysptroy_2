@@ -53,6 +53,9 @@ typedef struct {
     int notes_collected;                    // 쪽지 획득 수 (3개)
     bool gear_hint_revealed;                // 쪽지 조합으로 기어 힌트 획득 여부
     bool gear_puzzle_solved;                // 기어 퍼즐 해결 여부
+    
+    bool guards_choice_presented; // Room 3: 경비병 선택지 제시 여부
+    bool siren_song_attempted;    // Room 3: 세이렌 노래 시도 여부
 
 } PuzzleFlags;
 

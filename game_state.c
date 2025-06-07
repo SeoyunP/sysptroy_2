@@ -8,9 +8,9 @@ void initialize_game_state(GameState *state) {
     state->current_room = ROOM_PALLADION_TEMPLE;
     state->game_over = false;
     state->game_clear = false;
-    state->hint_uses_remaining = 3; // Example: 3 hints per game
+    state->hint_uses_remaining = 3; 
     state->start_time = time(NULL); // 현재 시간을 시작 시간으로 설정
-    state->time_limit_minutes = 30;  // 예시: 30분 제한 시간 설정
+    state->time_limit_minutes = 15;
 
     // Inventory initialization
     for (int i = 0; i < MAX_ITEMS; i++) {

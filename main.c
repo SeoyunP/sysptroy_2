@@ -13,7 +13,7 @@
 void game_intro() {
     clear_screen();
     print_delay("눈을 떠보니 당신은 방탈출 게임 안에 들어와있습니다.\n", 30);
-    print_delay("30분 이내에 목표를 전부 수행하여 이 곳에서 탈출하도록 하세요.\n", 30);
+    print_delay("15분 이내에 목표를 전부 수행하여 이 곳에서 탈출하도록 하세요.\n",30);
     printf("→enter 입력\n");
     getchar(); // Consume the newline character
 

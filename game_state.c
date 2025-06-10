@@ -1,33 +1,28 @@
 #include "game_state.h"
-#include <time.h> // time 함수를 위해 필요
+#include <time.h> 
 #include <stdio.h>
 #include <string.h>
 
-// 게임 상태 초기화
 void initialize_game_state(GameState *state) {
     state->current_room = ROOM_PALLADION_TEMPLE;
     state->game_over = false;
     state->game_clear = false;
     state->hint_uses_remaining = 3; 
-    state->start_time = time(NULL); // 현재 시간을 시작 시간으로 설정
+    state->start_time = time(NULL);
     state->time_limit_minutes = 15;
 
-    // Inventory initialization
     for (int i = 0; i < MAX_ITEMS; i++) {
         state->inventory[i] = 0;
     }
 
-    // Puzzle flags initialization to false
     memset(&state->puzzles, 0, sizeof(state->puzzles));
 
-    // Room specific initializations
     state->puzzles.papyrus_fragments_collected = 0;
     state->puzzles.notes_collected = 0;
     state->puzzles.guards_choice_presented = false;
     state->puzzles.siren_song_attempted = false;
 }
 
-// 인벤토리에 아이템이 있는지 확인
 bool has_item(const GameState *state, Item item_id) {
     if (item_id <= ITEM_NONE || item_id >= MAX_ITEMS) {
         return false;
@@ -35,7 +30,6 @@ bool has_item(const GameState *state, Item item_id) {
     return state->inventory[item_id] > 0;
 }
 
-// 인벤토리에 아이템 추가
 void add_item_to_inventory(GameState *state, Item item_id) {
     if (item_id > ITEM_NONE && item_id < MAX_ITEMS) {
         state->inventory[item_id]++;
@@ -43,7 +37,6 @@ void add_item_to_inventory(GameState *state, Item item_id) {
     }
 }
 
-// 인벤토리에서 아이템 제거
 void remove_item_from_inventory(GameState *state, Item item_id) {
     if (item_id > ITEM_NONE && item_id < MAX_ITEMS && state->inventory[item_id] > 0) {
         state->inventory[item_id]--;
@@ -51,7 +44,6 @@ void remove_item_from_inventory(GameState *state, Item item_id) {
     }
 }
 
-// 아이템 이름 반환
 const char* get_item_name(Item item_id) {
     switch (item_id) {
         case ITEM_TORCH: return "횃불";
@@ -68,7 +60,6 @@ const char* get_item_name(Item item_id) {
     }
 }
 
-// 방 이름 반환
 const char* get_room_name(RoomID room_id) {
     switch (room_id) {
         case ROOM_PALLADION_TEMPLE: return "팔라디온 신전";
@@ -78,11 +69,10 @@ const char* get_room_name(RoomID room_id) {
     }
 }
 
-// 인벤토리 내용 출력
 void display_inventory(const GameState *state) {
     printf("\n--- 인벤토리 ---\n");
     bool empty = true;
-    for (int i = 1; i < MAX_ITEMS; i++) { // Start from 1 to skip ITEM_NONE
+    for (int i = 1; i < MAX_ITEMS; i++) { 
         if (state->inventory[i] > 0) {
             printf("- %s (%d개)\n", get_item_name(i), state->inventory[i]);
             empty = false;
@@ -94,17 +84,14 @@ void display_inventory(const GameState *state) {
     printf("------------------\n");
 }
 
-// 게임 오버 설정
 void set_game_over(GameState *state, bool over) {
     state->game_over = over;
 }
 
-// 게임 클리어 설정
 void set_game_clear(GameState *state, bool clear) {
     state->game_clear = clear;
 }
 
-// 퍼즐 플래그 설정 유틸리티 함수
 void set_puzzle_solved(bool *flag_ptr) {
     *flag_ptr = true;
 }

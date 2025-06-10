@@ -7,7 +7,7 @@
 #include "../utils/utils.h"
 
 void play_room2(GameState *game_state) {
-    (void)game_state; // unused parameter
+    (void)game_state;
     static bool initial_entry = true;
 
     if (initial_entry) {
@@ -19,5 +19,4 @@ void play_room2(GameState *game_state) {
         print_delay("주변을 둘러보려면 'look around'를 입력하세요.\n", 30);
         initial_entry = false;
     }
-    // Room 2 loop logic is handled by command_parser.c based on user input
 }

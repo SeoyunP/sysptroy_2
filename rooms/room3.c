@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "rooms.h" // For room function declarations
+#include "rooms.h"
 #include "../game_state.h"
 #include "../utils/utils.h"
 
@@ -24,5 +24,4 @@ void play_room3(GameState *game_state) {
         print_delay("주변을 둘러보려면 'look around'를 입력하세요.\n", 30);
         initial_entry = false;
     }
-    // Room 3 loop logic is handled by command_parser.c based on user input
 }

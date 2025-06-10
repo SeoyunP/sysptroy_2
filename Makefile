@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c11 -I. -I./utils -I./rooms
-LDFLAGS = -lrt # librt 라이브러리 연결
+LDFLAGS = -lrt 
 
 # Source files
 SRC_MAIN = main.c

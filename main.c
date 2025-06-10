@@ -1,39 +1,35 @@
 #include "utils/utils.h"
 #include <stdio.h>
-#include <stdlib.h> // For exit()
-#include <string.h> // For strlen()
+#include <stdlib.h> 
+#include <string.h> 
 #include <stdbool.h>
-#include <time.h>   // For srand(time(NULL))
+#include <time.h>   
 
 #include "game_state.h"
 #include "command_parser.h"
-#include "rooms/rooms.h" // Include the rooms header
+#include "rooms/rooms.h" 
 
-// Function to handle game introduction
 void game_intro() {
     clear_screen();
     print_delay("눈을 떠보니 당신은 방탈출 게임 안에 들어와있습니다.\n", 30);
     print_delay("15분 이내에 목표를 전부 수행하여 이 곳에서 탈출하도록 하세요.\n",30);
     printf("→enter 입력\n");
-    getchar(); // Consume the newline character
+    getchar();
 
     clear_screen();
     print_delay("트로이의 왕자 파리스는 사랑과 미의 여신 아프로디테의 도움으로 그리스 연합 장군의 아내 헬레네를 납치했습니다. 그로 인해 트로이 전쟁이 발생하였습니다. 당신은 트로이와 그리스의 전쟁이 한창인 현재, 오디세우스의 동료입니다. 그리스 편에서 헬레네를 되찾고 전쟁이 끝나도록 도와봅시다. 건투를 빕니다!\n", 30);
     printf("→enter 입력\n");
-    getchar(); // Consume the newline character
+    getchar(); 
 }
 
 int main() {
-    srand(time(NULL)); // Seed for random number generation (if needed for future puzzles)
-
+    srand(time(NULL));
     GameState game_state;
     initialize_game_state(&game_state);
 
     game_intro();
 
-    // Main game loop
     while (!game_state.game_over && !game_state.game_clear) {
-        // Display current room information (handled by room functions)
         switch (game_state.current_room) {
             case ROOM_PALLADION_TEMPLE:
                 play_room1(&game_state);
@@ -51,7 +47,7 @@ int main() {
         }
 
         if (game_state.game_over || game_state.game_clear) {
-            break; // Exit game loop if game is over or clear
+            break;
         }
 
         printf("\n무엇을 하시겠습니까? ");
@@ -60,7 +56,7 @@ int main() {
             printf("입력 오류!\n");
             break;
         }
-        input[strcspn(input, "\n")] = 0; // Remove newline character
+        input[strcspn(input, "\n")] = 0;
 
         char verb[50];
         char noun[200];

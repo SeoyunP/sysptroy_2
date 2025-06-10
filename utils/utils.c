@@ -2,14 +2,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h> // For sleep
+#include <unistd.h>
 
 #ifdef _WIN32
 #include <windows.h>
 #define sleep_ms(ms) Sleep(ms)
 #else
 void sleep_ms(int ms) {
-    usleep(ms * 1000); // 이전 방식으로 복귀 (경고는 무시)
+    usleep(ms * 1000); 
 }
 #endif
 

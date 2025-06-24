@@ -39,7 +39,6 @@
 
 * make
 
-### 팀원 정보
+### Demo
+![image](https://github.com/user-attachments/assets/7ee5833d-ec76-4f41-9693-e63caaf579f1)
 
-**2024004894 박서윤**
-**2024006579 진윤지**
